@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "repo_id": 1,
+    "username": "kirill",
+    "role": "maintainer"
+  },
+  {
+    "id": 2,
+    "repo_id": 2,
+    "username": "anna",
+    "role": "developer"
+  }
+]

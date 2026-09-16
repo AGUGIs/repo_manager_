@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "project_id": 1,
+    "name": "course-notes",
+    "clone_url": "https://gitlab.local/course-notes.git",
+    "private": false
+  },
+  {
+    "id": 2,
+    "project_id": 2,
+    "name": "lab-python",
+    "clone_url": "https://gitlab.local/lab-python.git",
+    "private": true
+  }
+]

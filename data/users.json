@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "username": "kirill",
+    "full_name": "Кирилл Челышев"
+  },
+  {
+    "id": 2,
+    "username": "anna",
+    "full_name": "Анна Иванова"
+  },
+  {
+    "id": 3,
+    "username": "pavel",
+    "full_name": "Павел Орлов"
+  }
+]

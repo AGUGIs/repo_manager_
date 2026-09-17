@@ -6,23 +6,24 @@ from projects import add_project, days_since_create, find_project
 
 
 def test_add_project():
-    projects = {}
+    projects: dict[int, dict] = {}
     add_project(
         projects,
         'Курсовой дневник',
-        'Кирилл Челышев',
+        1,
         date(2026, 2, 3),
     )
     assert len(projects) == 1
     assert projects[1]['title'] == 'Курсовой дневник'
+    assert projects[1]['owner_id'] == 1
 
 
 def test_find_project():
-    projects = {}
+    projects: dict[int, dict] = {}
     add_project(
         projects,
         'Курсовой дневник',
-        'Кирилл Челышев',
+        1,
         date(2026, 2, 3),
     )
     assert find_project(projects, 'курсовой')

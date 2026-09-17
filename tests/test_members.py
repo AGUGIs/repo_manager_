@@ -21,11 +21,11 @@ def test_get_access_status():
 
 
 def test_duplicate_member_forbidden():
-    members = []
-    add_member(members, 1, 'kirill', 'maintainer')
-    assert is_member_assigned(members, 1, 'kirill')
+    members: list[dict] = []
+    add_member(members, 1, 1, 'maintainer')
+    assert is_member_assigned(members, 1, 1)
     try:
-        add_member(members, 1, 'kirill', 'owner')
+        add_member(members, 1, 1, 'owner')
         raised = False
     except ValueError:
         raised = True
@@ -33,8 +33,8 @@ def test_duplicate_member_forbidden():
 
 
 def test_remove_member():
-    members = []
-    add_member(members, 1, 'kirill', 'maintainer')
+    members: list[dict] = []
+    add_member(members, 1, 1, 'maintainer')
     assert remove_member(members, 1)
     assert members == []
 

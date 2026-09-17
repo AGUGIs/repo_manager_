@@ -2,13 +2,19 @@
   {
     "id": 1,
     "repo_id": 1,
-    "username": "kirill",
+    "user_id": 1,
     "role": "maintainer"
   },
   {
     "id": 2,
     "repo_id": 2,
-    "username": "anna",
+    "user_id": 2,
+    "role": "developer"
+  },
+  {
+    "id": 3,
+    "repo_id": 2,
+    "user_id": 1,
     "role": "developer"
   }
 ]

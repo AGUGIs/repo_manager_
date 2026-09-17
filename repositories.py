@@ -1,8 +1,11 @@
 """Функции для работы с git-репозиториями."""
 
+from collections.abc import Iterator
+from typing import Any
+
 
 def add_repository(
-    repositories: dict[int, dict],
+    repositories: dict[int, dict[str, Any]],
     project_id: int,
     name: str,
     clone_url: str,
@@ -28,9 +31,9 @@ def add_repository(
 
 
 def find_repository(
-    repositories: dict[int, dict],
+    repositories: dict[int, dict[str, Any]],
     query: str,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Найти репозитории по подстроке названия.
 
     Args:
@@ -41,7 +44,7 @@ def find_repository(
         Список репозиториев, в имени которых встречается query.
     """
     query_lower = query.lower()
-    found = []
+    found: list[dict[str, Any]] = []
     for repo in repositories.values():
         if query_lower in repo['name'].lower():
             found.append(repo)
@@ -63,9 +66,9 @@ def short_url(url: str) -> str:
 
 
 def iter_repos_by_visibility(
-    repositories: dict[int, dict],
+    repositories: dict[int, dict[str, Any]],
     private: bool,
-):
+) -> Iterator[dict[str, Any]]:
     """Генератор репозиториев с заданным режимом доступа."""
     for repo in repositories.values():
         if repo['private'] is private:
@@ -73,9 +76,9 @@ def iter_repos_by_visibility(
 
 
 def filter_repos_by_visibility(
-    repositories: dict[int, dict],
+    repositories: dict[int, dict[str, Any]],
     private: bool,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Отобрать репозитории по режиму доступа.
 
     Args:
@@ -88,7 +91,9 @@ def filter_repos_by_visibility(
     return list(iter_repos_by_visibility(repositories, private))
 
 
-def sort_repos(repositories: dict[int, dict]) -> list[dict]:
+def sort_repos(
+    repositories: dict[int, dict[str, Any]],
+) -> list[dict[str, Any]]:
     """Отсортировать репозитории по имени.
 
     Returns:

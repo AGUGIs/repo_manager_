@@ -1,5 +1,7 @@
 """Функции для работы с участниками репозиториев."""
 
+from typing import Any
+
 
 def can_push(role: str) -> bool:
     """Проверяет, может ли участник отправлять изменения."""
@@ -22,44 +24,44 @@ def get_access_status(has_push: bool) -> str:
 
 
 def is_member_assigned(
-    members: list[dict],
+    members: list[dict[str, Any]],
     repo_id: int,
-    username: str,
+    user_id: int,
 ) -> bool:
-    """Проверить, добавлен ли участник в репозиторий."""
+    """Проверить, добавлен ли пользователь в репозиторий."""
     for member in members:
         same_repo = member['repo_id'] == repo_id
-        same_user = member['username'] == username
+        same_user = member['user_id'] == user_id
         if same_repo and same_user:
             return True
     return False
 
 
 def add_member(
-    members: list[dict],
+    members: list[dict[str, Any]],
     repo_id: int,
-    username: str,
+    user_id: int,
     role: str,
-) -> dict:
+) -> dict[str, Any]:
     """Добавить участника в список members.
 
     Raises:
-        ValueError: если участник уже состоит в репозитории.
+        ValueError: если пользователь уже состоит в репозитории.
     """
-    if is_member_assigned(members, repo_id, username):
+    if is_member_assigned(members, repo_id, user_id):
         raise ValueError('Участник уже добавлен в репозиторий')
     member_id = max((item['id'] for item in members), default=0) + 1
     member = {
         'id': member_id,
         'repo_id': repo_id,
-        'username': username,
+        'user_id': user_id,
         'role': role,
     }
     members.append(member)
     return member
 
 
-def remove_member(members: list[dict], member_id: int) -> bool:
+def remove_member(members: list[dict[str, Any]], member_id: int) -> bool:
     """Удалить участника по идентификатору.
 
     Returns:
@@ -72,7 +74,7 @@ def remove_member(members: list[dict], member_id: int) -> bool:
     return False
 
 
-def get_members_stats(members: list[dict]) -> dict[str, int]:
+def get_members_stats(members: list[dict[str, Any]]) -> dict[str, int]:
     """Посчитать количество участников по ролям.
 
     Returns:

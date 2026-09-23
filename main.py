@@ -82,9 +82,15 @@ def show_pr1_card(
     print(member.access_status())
 
 
+def print_separator() -> None:
+    """Напечатать разделительную полосу перед результатом."""
+    print('=========================================')
+
+
 def search_repository(repositories: list[Repository]) -> None:
     """Найти репозиторий по фрагменту имени."""
     query = input('Фрагмент имени репозитория: ').strip()
+    print_separator()
     found = find_repository(repositories, query)
     if not found:
         print('Репозитории не найдены.')
@@ -96,6 +102,7 @@ def search_repository(repositories: list[Repository]) -> None:
 def search_project(projects: list[Project]) -> None:
     """Найти проект по фрагменту названия."""
     query = input('Фрагмент названия проекта: ').strip()
+    print_separator()
     found = find_project(projects, query)
     if not found:
         print('Проекты не найдены.')
@@ -107,6 +114,7 @@ def search_project(projects: list[Project]) -> None:
 def search_user(users: list[User]) -> None:
     """Найти пользователя по логину или ФИО."""
     query = input('Фрагмент логина или ФИО: ').strip()
+    print_separator()
     found = find_user(users, query)
     if not found:
         print('Пользователи не найдены.')
@@ -203,6 +211,7 @@ def print_menu() -> None:
     print('13. Найти пользователя')
     print('14. Добавить пользователя')
     print('0. Выход')
+    print('=========================================')
 
 
 def main() -> None:

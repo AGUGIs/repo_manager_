@@ -1,8 +1,13 @@
-"""Загрузка и сохранение данных проекта в JSON."""
+"""Загрузка и сохранение объектов проекта в JSON."""
 
 import json
 from pathlib import Path
 from typing import Any, cast
+
+from models import Member, Project, Repository, User
+from models.projects import get_project_by_id, parse_opened_on
+from models.repositories import get_repository_by_id
+from models.users import get_user_by_id
 
 DATA_DIR = Path(__file__).resolve().parent / 'data'
 
@@ -38,62 +43,104 @@ def _save_list(filename: str, records: list[dict[str, Any]]) -> None:
         json.dump(records, file, ensure_ascii=False, indent=2)
 
 
-def _to_dict(records: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
-    """Преобразовать список записей в словарь по полю id."""
-    return {int(item['id']): item for item in records}
-
-
-def load_projects(
-    filename: str = 'projects.json',
-) -> dict[int, dict[str, Any]]:
-    """Загрузить проекты из JSON-файла."""
-    return _to_dict(_load_list(filename))
-
-
-def save_projects(
-    projects: dict[int, dict[str, Any]],
-    filename: str = 'projects.json',
-) -> None:
-    """Сохранить проекты в JSON-файл."""
-    _save_list(filename, list(projects.values()))
-
-
-def load_repositories(
-    filename: str = 'repositories.json',
-) -> dict[int, dict[str, Any]]:
-    """Загрузить репозитории из JSON-файла."""
-    return _to_dict(_load_list(filename))
-
-
-def save_repositories(
-    repositories: dict[int, dict[str, Any]],
-    filename: str = 'repositories.json',
-) -> None:
-    """Сохранить репозитории в JSON-файл."""
-    _save_list(filename, list(repositories.values()))
-
-
-def load_members(filename: str = 'members.json') -> list[dict[str, Any]]:
-    """Загрузить участников из JSON-файла."""
-    return _load_list(filename)
-
-
-def save_members(
-    members: list[dict[str, Any]],
-    filename: str = 'members.json',
-) -> None:
-    """Сохранить участников в JSON-файл."""
-    _save_list(filename, members)
-
-
-def load_users(filename: str = 'users.json') -> dict[int, dict[str, Any]]:
-    """Загрузить пользователей из JSON-файла."""
-    return _to_dict(_load_list(filename))
+def load_users(filename: str = 'users.json') -> list[User]:
+    """Загрузить пользователей из JSON как объекты User."""
+    return [User.from_data(item) for item in _load_list(filename)]
 
 
 def save_users(
-    users: dict[int, dict[str, Any]],
+    users: list[User],
     filename: str = 'users.json',
 ) -> None:
-    """Сохранить пользователей в JSON-файл."""
-    _save_list(filename, list(users.values()))
+    """Сохранить объекты User в JSON."""
+    _save_list(filename, [user.to_dict() for user in users])
+
+
+def load_projects(
+    users: list[User],
+    filename: str = 'projects.json',
+) -> list[Project]:
+    """Загрузить проекты и связать их с объектами User."""
+    projects: list[Project] = []
+    for data in _load_list(filename):
+        owner = get_user_by_id(users, int(data['owner_id']))
+        if owner is None:
+            continue
+        projects.append(
+            Project(
+                int(data['id']),
+                str(data['title']),
+                owner,
+                parse_opened_on(str(data['opened_on'])),
+            )
+        )
+    return projects
+
+
+def save_projects(
+    projects: list[Project],
+    filename: str = 'projects.json',
+) -> None:
+    """Сохранить объекты Project в JSON."""
+    _save_list(filename, [project.to_dict() for project in projects])
+
+
+def load_repositories(
+    projects: list[Project],
+    filename: str = 'repositories.json',
+) -> list[Repository]:
+    """Загрузить репозитории и связать их с объектами Project."""
+    repositories: list[Repository] = []
+    for data in _load_list(filename):
+        project = get_project_by_id(projects, int(data['project_id']))
+        if project is None:
+            continue
+        repositories.append(
+            Repository(
+                int(data['id']),
+                project,
+                str(data['name']),
+                str(data['clone_url']),
+                bool(data['private']),
+            )
+        )
+    return repositories
+
+
+def save_repositories(
+    repositories: list[Repository],
+    filename: str = 'repositories.json',
+) -> None:
+    """Сохранить объекты Repository в JSON."""
+    _save_list(filename, [repo.to_dict() for repo in repositories])
+
+
+def load_members(
+    repositories: list[Repository],
+    users: list[User],
+    filename: str = 'members.json',
+) -> list[Member]:
+    """Загрузить участников и восстановить ссылки на объекты."""
+    members: list[Member] = []
+    for data in _load_list(filename):
+        repo = get_repository_by_id(repositories, int(data['repo_id']))
+        user = get_user_by_id(users, int(data['user_id']))
+        if repo is None or user is None:
+            continue
+        member = Member(
+            int(data['id']),
+            repo,
+            user,
+            str(data['role']),
+        )
+        member.is_revoked = bool(data.get('is_revoked', False))
+        members.append(member)
+    return members
+
+
+def save_members(
+    members: list[Member],
+    filename: str = 'members.json',
+) -> None:
+    """Сохранить объекты Member в JSON."""
+    _save_list(filename, [member.to_dict() for member in members])

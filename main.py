@@ -1,22 +1,29 @@
 """Точка запуска сервиса управления репозиториями."""
 
-from datetime import date, datetime
-from typing import Any
+from datetime import date
 
-from members import (
+from models import Member, Project, Repository, User
+from models.members import (
     add_member,
     can_push,
     get_access_status,
+    get_member_by_id,
     get_members_stats,
-    remove_member,
+    revoke_member,
+    show_members,
 )
-from projects import days_since_create, find_project, sort_projects
-from repositories import (
+from models.projects import find_project, show_projects
+from models.repositories import (
     filter_repos_by_visibility,
     find_repository,
-    short_url,
-    sort_repos,
-    visibility_text,
+    get_repository_by_id,
+    show_repositories,
+)
+from models.users import (
+    add_user,
+    find_user,
+    get_user_by_username,
+    show_users,
 )
 from storage import (
     load_members,
@@ -26,107 +33,13 @@ from storage import (
     save_members,
     save_users,
 )
-from users import (
-    add_user,
-    find_user,
-    get_user,
-    get_user_by_username,
-    sort_users,
-)
 from utils import input_int
 
 
-def _parse_opened_on(value: str) -> date:
-    """Преобразовать дату из JSON в объект date."""
-    return datetime.strptime(value, '%Y-%m-%d').date()
-
-
-def _user_label(
-    users: dict[int, dict[str, Any]],
-    user_id: int,
-) -> str:
-    """Собрать подпись пользователя для вывода."""
-    user = get_user(users, user_id)
-    if user is None:
-        return 'неизвестный пользователь'
-    return f"{user['full_name']} ({user['username']})"
-
-
-def show_projects(
-    projects: dict[int, dict[str, Any]],
-    users: dict[int, dict[str, Any]],
-) -> None:
-    """Вывести список учебных проектов."""
-    print('\nПроекты:')
-    if not projects:
-        print('Список проектов пуст.')
-        return
-    for project in sort_projects(projects):
-        opened = _parse_opened_on(project['opened_on'])
-        age = days_since_create(opened, date.today())
-        owner = _user_label(users, project['owner_id'])
-        print(
-            f"{project['id']}. {project['title']} | "
-            f"владелец: {owner} | {age} дн."
-        )
-
-
-def show_repositories(
-    repositories: dict[int, dict[str, Any]],
-    projects: dict[int, dict[str, Any]],
-) -> None:
-    """Вывести список репозиториев."""
-    print('\nРепозитории:')
-    if not repositories:
-        print('Список репозиториев пуст.')
-        return
-    for repo in sort_repos(repositories):
-        project = projects.get(repo['project_id'], {})
-        title = project.get('title', 'без проекта')
-        print(
-            f"{repo['id']}. {repo['name']} | {title} | "
-            f"{visibility_text(repo['private'])} | "
-            f"{short_url(repo['clone_url'])}"
-        )
-
-
-def show_members(
-    members: list[dict[str, Any]],
-    repositories: dict[int, dict[str, Any]],
-    users: dict[int, dict[str, Any]],
-) -> None:
-    """Вывести список участников."""
-    print('\nУчастники:')
-    if not members:
-        print('Список участников пуст.')
-        return
-    for member in members:
-        repo = repositories.get(member['repo_id'], {})
-        repo_name = repo.get('name', 'неизвестный репозиторий')
-        person = _user_label(users, member['user_id'])
-        print(
-            f"{member['id']}. {person} | "
-            f"роль: {member['role']} | {repo_name}"
-        )
-
-
-def show_users(users: dict[int, dict[str, Any]]) -> None:
-    """Вывести список пользователей."""
-    print('\nПользователи:')
-    if not users:
-        print('Список пользователей пуст.')
-        return
-    for user in sort_users(users):
-        print(
-            f"{user['id']}. {user['full_name']} | "
-            f"логин: {user['username']}"
-        )
-
-
 def show_stats(
-    repositories: dict[int, dict[str, Any]],
-    members: list[dict[str, Any]],
-    users: dict[int, dict[str, Any]],
+    repositories: list[Repository],
+    members: list[Member],
+    users: list[User],
 ) -> None:
     """Показать статистику по репозиториям, ролям и пользователям."""
     private_count = len(filter_repos_by_visibility(repositories, True))
@@ -139,39 +52,37 @@ def show_stats(
     print(f'Всего участников: {len(members)}')
     stats = get_members_stats(members)
     if not stats:
-        print('Участников по ролям нет.')
+        print('Активных участников по ролям нет.')
         return
     for role, count in sorted(stats.items()):
         print(f'Роль {role}: {count}')
 
 
 def show_pr1_card(
-    projects: dict[int, dict[str, Any]],
-    repositories: dict[int, dict[str, Any]],
-    members: list[dict[str, Any]],
-    users: dict[int, dict[str, Any]],
+    projects: list[Project],
+    repositories: list[Repository],
+    members: list[Member],
 ) -> None:
     """Показать карточку из сценария ПР1."""
     if not projects or not repositories:
         print('Недостаточно данных для карточки проекта.')
         return
-    project = next(iter(projects.values()))
-    repo = next(iter(repositories.values()))
-    member = members[0] if members else {'role': 'guest'}
-    opened = _parse_opened_on(project['opened_on'])
-    age_days = days_since_create(opened, date.today())
-    print(f"Владелец: {_user_label(users, project['owner_id'])}")
-    print(f"Проект: {project['title']}")
-    print(f"Репозиторий: {repo['name']}")
-    print(f"Клонирование: {short_url(repo['clone_url'])}")
-    print(visibility_text(repo['private']))
-    print(f'Проекту {age_days} дн.')
-    print(get_access_status(can_push(member['role'])))
+    project = projects[0]
+    repo = repositories[0]
+    member = members[0] if members else None
+    print(f'Владелец: {project.owner}')
+    print(f'Проект: {project.title}')
+    print(f'Репозиторий: {repo.name}')
+    print(f'Клонирование: {repo.masked_url()}')
+    print(repo.visibility_text())
+    print(f'Проекту {project.days_since(date.today())} дн.')
+    if member is None:
+        print(get_access_status(can_push('guest')))
+        return
+    print(member.access_status())
 
 
-def search_repository(
-    repositories: dict[int, dict[str, Any]],
-) -> None:
+def search_repository(repositories: list[Repository]) -> None:
     """Найти репозиторий по фрагменту имени."""
     query = input('Фрагмент имени репозитория: ').strip()
     found = find_repository(repositories, query)
@@ -179,10 +90,10 @@ def search_repository(
         print('Репозитории не найдены.')
         return
     for repo in found:
-        print(f"{repo['id']}. {repo['name']}")
+        print(f'{repo.id}. {repo.name}')
 
 
-def search_project(projects: dict[int, dict[str, Any]]) -> None:
+def search_project(projects: list[Project]) -> None:
     """Найти проект по фрагменту названия."""
     query = input('Фрагмент названия проекта: ').strip()
     found = find_project(projects, query)
@@ -190,10 +101,10 @@ def search_project(projects: dict[int, dict[str, Any]]) -> None:
         print('Проекты не найдены.')
         return
     for project in found:
-        print(f"{project['id']}. {project['title']}")
+        print(f'{project.id}. {project.title}')
 
 
-def search_user(users: dict[int, dict[str, Any]]) -> None:
+def search_user(users: list[User]) -> None:
     """Найти пользователя по логину или ФИО."""
     query = input('Фрагмент логина или ФИО: ').strip()
     found = find_user(users, query)
@@ -201,39 +112,36 @@ def search_user(users: dict[int, dict[str, Any]]) -> None:
         print('Пользователи не найдены.')
         return
     for user in found:
-        print(f"{user['id']}. {user['full_name']} ({user['username']})")
+        print(f'{user.id}. {user}')
 
 
-def check_push_right(members: list[dict[str, Any]]) -> None:
+def check_push_right(members: list[Member]) -> None:
     """Проверить право участника на push."""
     member_id = input_int('Идентификатор участника: ')
-    selected = None
-    for member in members:
-        if member['id'] == member_id:
-            selected = member
-            break
+    selected = get_member_by_id(members, member_id)
     if selected is None:
         print('Участник не найден.')
         return
-    print(get_access_status(can_push(selected['role'])))
+    print(selected.access_status())
 
 
-def check_visibility(repositories: dict[int, dict[str, Any]]) -> None:
+def check_visibility(repositories: list[Repository]) -> None:
     """Показать режим доступа репозитория."""
     repo_id = input_int('Идентификатор репозитория: ')
-    repo = repositories.get(repo_id)
+    repo = get_repository_by_id(repositories, repo_id)
     if repo is None:
         print('Репозиторий не найден.')
         return
-    print(visibility_text(repo['private']))
+    print(repo.visibility_text())
 
 
-def add_user_interactive(users: dict[int, dict[str, Any]]) -> None:
+def add_user_interactive(users: list[User]) -> None:
     """Добавить пользователя и сохранить изменения."""
     username = input('Логин: ').strip()
     full_name = input('ФИО: ').strip()
+    email = input('Email: ').strip()
     try:
-        add_user(users, username, full_name)
+        add_user(users, username, full_name, email)
     except ValueError as error:
         print(error)
         return
@@ -242,13 +150,14 @@ def add_user_interactive(users: dict[int, dict[str, Any]]) -> None:
 
 
 def add_member_interactive(
-    members: list[dict[str, Any]],
-    repositories: dict[int, dict[str, Any]],
-    users: dict[int, dict[str, Any]],
+    members: list[Member],
+    repositories: list[Repository],
+    users: list[User],
 ) -> None:
     """Добавить участника и сохранить изменения."""
     repo_id = input_int('Идентификатор репозитория: ')
-    if repo_id not in repositories:
+    repo = get_repository_by_id(repositories, repo_id)
+    if repo is None:
         print('Репозиторий не найден.')
         return
     username = input('Логин пользователя: ').strip()
@@ -258,7 +167,7 @@ def add_member_interactive(
         return
     role = input('Роль (owner/maintainer/developer): ').strip()
     try:
-        add_member(members, repo_id, user['id'], role)
+        add_member(members, repo, user, role)
     except ValueError as error:
         print(error)
         return
@@ -266,14 +175,14 @@ def add_member_interactive(
     print('Участник добавлен.')
 
 
-def remove_member_interactive(members: list[dict[str, Any]]) -> None:
-    """Удалить участника и сохранить изменения."""
+def revoke_member_interactive(members: list[Member]) -> None:
+    """Отозвать доступ участника и сохранить изменения."""
     member_id = input_int('Идентификатор участника: ')
-    if remove_member(members, member_id):
+    if revoke_member(members, member_id):
         save_members(members)
-        print('Участник удалён.')
+        print('Доступ участника отозван.')
         return
-    print('Участник не найден.')
+    print('Активный участник не найден.')
 
 
 def print_menu() -> None:
@@ -284,7 +193,7 @@ def print_menu() -> None:
     print('3. Проверить право на push')
     print('4. Проверить режим доступа')
     print('5. Добавить участника')
-    print('6. Удалить участника')
+    print('6. Отозвать доступ участника')
     print('7. Показать участников')
     print('8. Показать проекты')
     print('9. Найти проект по названию')
@@ -297,25 +206,23 @@ def print_menu() -> None:
 
 
 def main() -> None:
-    """Точка запуска: цикл меню и вызов функций проекта."""
+    """Точка запуска: цикл меню и коллекции объектов."""
     users = load_users()
-    projects = load_projects()
-    repositories = load_repositories()
-    members = load_members()
+    projects = load_projects(users)
+    repositories = load_repositories(projects)
+    members = load_members(repositories, users)
     actions = {
-        1: lambda: show_repositories(repositories, projects),
+        1: lambda: show_repositories(repositories),
         2: lambda: search_repository(repositories),
         3: lambda: check_push_right(members),
         4: lambda: check_visibility(repositories),
         5: lambda: add_member_interactive(members, repositories, users),
-        6: lambda: remove_member_interactive(members),
-        7: lambda: show_members(members, repositories, users),
-        8: lambda: show_projects(projects, users),
+        6: lambda: revoke_member_interactive(members),
+        7: lambda: show_members(members),
+        8: lambda: show_projects(projects),
         9: lambda: search_project(projects),
         10: lambda: show_stats(repositories, members, users),
-        11: lambda: show_pr1_card(
-            projects, repositories, members, users,
-        ),
+        11: lambda: show_pr1_card(projects, repositories, members),
         12: lambda: show_users(users),
         13: lambda: search_user(users),
         14: lambda: add_user_interactive(users),

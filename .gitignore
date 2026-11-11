@@ -8,3 +8,14 @@ __pycache__/
 report_assets/
 *.pyc
 ~$*.docx
+tmp/
+staticfiles/
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Локальная база ORM создаётся migrate и import_pr7
+db.sqlite3
+data/repo_manager.sqlite
+data/repo_manager_pr7_backup.sqlite
+data/orm_export.json

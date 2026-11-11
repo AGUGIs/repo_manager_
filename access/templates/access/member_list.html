@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{% if active_only %}Активные доступы{% else %}Участники{% endif %}{% endblock %}
+{% block content %}
+    <h1>{% if active_only %}Активные доступы{% else %}Участники{% endif %}</h1>
+    <p class="section-links">
+        <a href="{% url 'access:members' %}">Все записи доступа</a>
+        <a href="{% url 'access:active_members' %}">Только активные</a>
+        <a href="{% url 'access:users' %}">Все пользователи</a>
+    </p>
+    <p class="section-summary">Всего записей доступа: {{ members|length }}</p>
+    {% include 'access/includes/member_list.html' with members=members only %}
+{% endblock %}

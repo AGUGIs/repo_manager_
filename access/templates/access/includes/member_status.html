@@ -1,0 +1,5 @@
+{% if member.is_revoked %}
+    <span class="badge member-status member-status-revoked">Доступ отозван</span>
+{% else %}
+    <span class="badge member-status member-status-active">Доступ активен</span>
+{% endif %}

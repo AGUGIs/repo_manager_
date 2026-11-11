@@ -1,0 +1,5 @@
+<article class="card entity-card">
+    <h2><a href="{% url 'catalog:repository_detail' repository.id %}">{{ repository.name|default:'Без названия' }}</a></h2>
+    <p>Проект: <a href="{% url 'catalog:project_detail' repository.project.id %}">{{ repository.project.title|default:'Без названия' }}</a></p>
+    <div>{% include 'catalog/includes/visibility.html' with repository=repository only %}</div>
+</article>

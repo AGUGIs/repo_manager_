@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Поиск репозиториев{% endblock %}
+{% block content %}
+    <a class="back-link" href="{% url 'catalog:repositories' %}">← Все репозитории</a>
+    <h1>Поиск репозиториев</h1>
+    <p class="lead">Поиск по названию репозитория и проекта, режиму доступа и участию пользователя.</p>
+    {% include 'catalog/includes/repository_filters.html' %}
+    {% if error %}
+        <p class="form-error" role="alert">{{ error }}</p>
+    {% elif searched %}
+        <h2>Результаты поиска</h2>
+        <p class="section-summary">Найдено: {{ total }}</p>
+        {% if repositories %}
+            {% include 'catalog/includes/repository_list.html' with repositories=repositories only %}
+        {% else %}
+            <p class="empty-state">По выбранным условиям репозитории не найдены.</p>
+        {% endif %}
+        {% include 'catalog/includes/pagination.html' %}
+    {% endif %}
+{% endblock %}

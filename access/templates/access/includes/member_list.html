@@ -1,0 +1,7 @@
+<div class="entity-list">
+    {% for member in members %}
+        {% include 'access/includes/member_card.html' with member=member only %}
+    {% empty %}
+        <p class="empty-state">Участников пока нет.</p>
+    {% endfor %}
+</div>

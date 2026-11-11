@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.title|default:'Проект' }}{% endblock %}
+{% block content %}
+    <a class="back-link" href="{% url 'catalog:projects' %}">← Все проекты</a>
+    <h1>{{ project.title|default:'Без названия' }}</h1>
+    <section class="card entity-card">
+        <dl class="detail-list">
+            <dt>Владелец</dt><dd>{{ project.owner }}</dd>
+            <dt>Дата создания</dt><dd>{{ project.opened_on|date:'d.m.Y' }}</dd>
+            <dt>Возраст проекта</dt><dd>{{ age_days }} дн.</dd>
+        </dl>
+    </section>
+    <h2>Репозитории проекта</h2>
+    <p class="section-summary">Всего репозиториев: {{ repositories|length }}</p>
+    {% include 'catalog/includes/repository_list.html' with repositories=repositories only %}
+{% endblock %}

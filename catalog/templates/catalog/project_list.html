@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Проекты{% endblock %}
+{% block content %}
+    <h1>Проекты</h1>
+    <p class="section-summary">Всего проектов: {{ projects|length }}</p>
+    <div class="entity-list">
+        {% for project in projects %}
+            {% include 'catalog/includes/project_card.html' with project=project only %}
+        {% empty %}
+            <p class="empty-state">Проектов пока нет.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

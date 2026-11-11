@@ -1,0 +1,7 @@
+<article class="card entity-card">
+    <h2><a href="{% url 'access:member_detail' member.id %}">{{ member.user }}</a></h2>
+    <p>Репозиторий: <a href="{% url 'catalog:repository_detail' member.repository.id %}">{{ member.repository.name|default:'Без названия' }}</a></p>
+    <p>Роль: {{ member.role|default:'Не указана' }}</p>
+    <div>{% include 'access/includes/member_status.html' with member=member only %}</div>
+    <p class="push-status">{{ member.access_status }}</p>
+</article>

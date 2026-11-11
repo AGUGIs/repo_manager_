@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+    <h1>Статистика</h1>
+    <p class="lead">Проекты, репозитории и участие команды.</p>
+    <p>Размер активной команды: в среднем {{ team_distribution.average|default_if_none:0|floatformat:1 }}, минимум {{ team_distribution.minimum|default_if_none:0 }}, максимум {{ team_distribution.maximum|default_if_none:0 }}.</p>
+    <div class="card-grid summary-grid">
+        <section class="card entity-card"><h2>Пользователи</h2><p class="metric">{{ counts.users }}</p></section>
+        <section class="card entity-card"><h2>Проекты</h2><p class="metric">{{ counts.projects }}</p></section>
+        <section class="card entity-card"><h2>Репозитории</h2><p class="metric">{{ repository_summary.total }}</p><p>Открытые: {{ repository_summary.public_count }} · Закрытые: {{ repository_summary.private_count }}</p></section>
+        <section class="card entity-card"><h2>Доступы</h2><p class="metric">{{ member_summary.total }}</p><p>Активные: {{ member_summary.active_count }} · Отозванные: {{ member_summary.revoked_count }}</p></section>
+    </div>
+    <section class="card entity-card">
+        <h2>Активные участники по репозиториям</h2>
+        {% for item in repository_statistics %}
+            <p class="stat-row"><a href="{% url 'catalog:repository_detail' item.id %}">{{ item.name|default:'Без названия' }}</a><strong>{{ item.active_count }}</strong></p>
+        {% empty %}<p>Репозиториев пока нет.</p>{% endfor %}
+    </section>
+    <div class="card-grid">
+        <section class="card entity-card">
+            <h2>Роли активных участников</h2>
+            {% for item in role_statistics %}
+                <p class="stat-row"><span>{{ item.role }}</span><strong>{{ item.member_count }}</strong></p>
+            {% empty %}<p>Активных доступов пока нет.</p>{% endfor %}
+        </section>
+        <section class="card entity-card">
+            <h2>Репозитории по проектам</h2>
+            {% for item in project_statistics %}
+                <p class="stat-row"><a href="{% url 'catalog:project_detail' item.id %}">{{ item.title|default:'Без названия' }}</a><strong>{{ item.repo_count }}</strong></p>
+            {% empty %}<p>Проектов пока нет.</p>{% endfor %}
+        </section>
+    </div>
+    <section class="card entity-card">
+        <h2>Репозитории с командой больше заданного размера</h2>
+        <form method="get" action="{% url 'catalog:statistics' %}" class="threshold-form">
+            <label for="min-members">Активных участников больше чем</label>
+            <input type="number" id="min-members" name="min_members" value="{{ min_members }}" min="0" max="1000000" required>
+            <button type="submit" class="btn btn-primary">Показать</button>
+        </form>
+        {% if error %}<p class="form-error" role="alert">{{ error }}</p>
+        {% else %}
+            {% for item in popular_repositories %}
+                <p class="stat-row"><a href="{% url 'catalog:repository_detail' item.id %}">{{ item.name|default:'Без названия' }}</a><strong>{{ item.active_count }}</strong></p>
+            {% empty %}<p class="empty-state">Репозиториев с таким размером команды нет.</p>{% endfor %}
+        {% endif %}
+    </section>
+{% endblock %}

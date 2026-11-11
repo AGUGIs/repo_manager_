@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ repository.name|default:'Репозиторий' }}{% endblock %}
+{% block content %}
+    <a class="back-link" href="{% url 'catalog:repositories' %}">← Все репозитории</a>
+    <h1>{{ repository.name|default:'Без названия' }}</h1>
+    <section class="card entity-card">
+        <div>{% include 'catalog/includes/visibility.html' with repository=repository only %}</div>
+        <dl class="detail-list">
+            <dt>Проект</dt>
+            <dd><a href="{% url 'catalog:project_detail' repository.project.id %}">{{ repository.project.title|default:'Без названия' }}</a></dd>
+            <dt>Адрес клонирования</dt><dd><code>{{ repository.masked_url }}</code></dd>
+        </dl>
+    </section>
+    <h2>Участники репозитория</h2>
+    <p class="section-summary">Всего записей доступа: {{ members|length }}</p>
+    {% include 'access/includes/member_list.html' with members=members only %}
+{% endblock %}

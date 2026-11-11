@@ -1,0 +1,7 @@
+<div class="entity-list">
+    {% for repository in repositories %}
+        {% include 'catalog/includes/repository_card.html' with repository=repository only %}
+    {% empty %}
+        <p class="empty-state">Репозиториев пока нет.</p>
+    {% endfor %}
+</div>

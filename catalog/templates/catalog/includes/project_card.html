@@ -1,0 +1,5 @@
+<article class="card entity-card">
+    <h2><a href="{% url 'catalog:project_detail' project.id %}">{{ project.title|default:'Без названия' }}</a></h2>
+    <p class="muted">Владелец: {{ project.owner }}</p>
+    <p>Создан: {{ project.opened_on|date:'d.m.Y' }}</p>
+</article>

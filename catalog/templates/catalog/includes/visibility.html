@@ -1,0 +1,5 @@
+{% if repository.private %}
+    <span class="badge repo-status repo-status-private">Доступ к репозиторию ограничен</span>
+{% else %}
+    <span class="badge repo-status repo-status-public">Репозиторий открыт для просмотра</span>
+{% endif %}

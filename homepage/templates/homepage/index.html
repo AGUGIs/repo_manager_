@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+    <section class="hero">
+        <p class="eyebrow">Проекты и команда</p>
+        <h1>Менеджер репозиториев</h1>
+        <p class="lead">Учебные проекты, Git-репозитории и права участников в одном месте.</p>
+        <a class="btn btn-primary" href="{% url 'catalog:projects' %}">Открыть проекты</a>
+    </section>
+    <div class="card-grid">
+        <section class="card entity-card">
+            <h2>Проекты</h2>
+            <p>Владелец, дата создания и связанные репозитории.</p>
+            <a href="{% url 'catalog:projects' %}">Перейти к проектам →</a>
+        </section>
+        <section class="card entity-card">
+            <h2>Репозитории</h2>
+            <p>Режим доступа, адрес клонирования и состав команды.</p>
+            <a href="{% url 'catalog:repositories' %}">Перейти к репозиториям →</a>
+        </section>
+        <section class="card entity-card">
+            <h2>Участники</h2>
+            <p>Роли, состояние доступа и право отправлять изменения.</p>
+            <a href="{% url 'access:members' %}">Перейти к участникам →</a>
+        </section>
+        <section class="card entity-card">
+            <h2>Статистика</h2>
+            <p>Размер команд, роли участников и распределение репозиториев.</p>
+            <a href="{% url 'catalog:statistics' %}">Посмотреть статистику →</a>
+        </section>
+    </div>
+{% endblock %}

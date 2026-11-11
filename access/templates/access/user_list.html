@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+    <a class="back-link" href="{% url 'access:members' %}">← Участники репозиториев</a>
+    <h1>Пользователи</h1>
+    <p class="section-summary">Всего пользователей: {{ users|length }}</p>
+    {% for user in users %}
+        <article class="card entity-card">
+            <h2>{{ user.full_name }} ({{ user.username }})</h2>
+            <p>Почта: {{ user.email|default:'Не указана' }}</p>
+        </article>
+    {% empty %}<p class="empty-state">Пользователей пока нет.</p>{% endfor %}
+{% endblock %}

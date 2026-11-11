@@ -8,7 +8,7 @@ lint:
 	python3 -m flake8
 
 typecheck:
-	python3 -m mypy main.py storage.py utils.py models
+	python3 -m mypy main.py storage.py utils.py models db
 
 test:
 	python3 -m pytest

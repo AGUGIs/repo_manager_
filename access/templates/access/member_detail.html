@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Участник {{ member.user.username }}{% endblock %}
+{% block content %}
+    <a class="back-link" href="{% url 'access:members' %}">← Все участники</a>
+    <h1>{{ member.user }}</h1>
+    <section class="card entity-card">
+        <dl class="detail-list">
+            <dt>Репозиторий</dt>
+            <dd><a href="{% url 'catalog:repository_detail' member.repository.id %}">{{ member.repository.name|default:'Без названия' }}</a></dd>
+            <dt>Роль</dt><dd>{{ member.role|default:'Не указана' }}</dd>
+            <dt>Состояние доступа</dt>
+            <dd>{% include 'access/includes/member_status.html' with member=member only %}</dd>
+            <dt>Право на push</dt><dd>{{ member.access_status }}</dd>
+        </dl>
+    </section>
+{% endblock %}
